@@ -168,27 +168,98 @@ int getListenPort()
 
 int getMqIp(char *mqIp)
 {
-    static int flag = 0;
     GetProfileString("./initConf.conf", "heartbeat_server", "rabbitMqIp", mqIp);
     dbgTrace("%s:%s\n", __FUNCTION__ , mqIp);
 	
     if(strlen(mqIp) <= 0)
     {
-        strcpy(mqIp, "10.9.200.12");
-		dbgTrace("%s:error:hostIp=%s\n", __FUNCTION__ , mqIp);
+        strcpy(mqIp, "182.254.146.223");
+		exit(-1);
+    }
+}
+
+int getMqPort()
+{
+    int iMqPort = 5672;
+    char sMqPort[16] = {0};
+    static int flag = 0;
+
+    GetProfileString("./initConf.conf", "heartbeat_server", "rabbitMqPort", sMqPort);
+
+    if(flag == 0)
+    {
+        dbgTrace("%s:%s\n", __FUNCTION__, sMqPort);
+        flag = 1;
+    }
+
+    if(strlen(sMqPort) > 0)
+    {
+        iMqPort = atoi(sMqPort);
+
+    }
+
+    return iMqPort;
+
+}
+
+
+
+int getMqExchange(char *mqExchange)
+{
+    GetProfileString("./initConf.conf", "heartbeat_server", "rabbitMqExchange", mqExchange);
+    dbgTrace("%s:%s\n", __FUNCTION__ , mqExchange);
+	
+    if(strlen(mqExchange) <= 0)
+    {
+        strcpy(mqExchange,"reportInstruction");
 		exit(-1);
     }
 }
 
 
+int getMqExchangeType(char *mqExchangeType)
+{
+    GetProfileString("./initConf.conf", "heartbeat_server", "rabbitMqExchangeType", mqExchangeType);
+    dbgTrace("%s:%s\n", __FUNCTION__ , mqExchangeType);
+	
+    if(strlen(mqExchangeType) <= 0)
+    {
+        strcpy(mqExchangeType,"fanout");
+		exit(-1);
+    }
+}
+
+int getMqRoutingKey(char *mqRoutingKey)
+{
+    GetProfileString("./initConf.conf", "heartbeat_server", "rabbitMqRoutingKey", mqRoutingKey);
+    dbgTrace("%s:%s\n", __FUNCTION__ , mqRoutingKey);
+	
+    if(strlen(mqRoutingKey) <= 0)
+    {
+        strcpy(mqRoutingKey,"test");
+		exit(-1);
+    }
+}
+
+
+
+
 static int send_data_to_mq(char *data, int datalen)
 {
+#if 0
 	char mqIp[16] = "182.254.146.223";
-	int port = 5672; 
-	int status;
 	char const exchange[32] = "reportInstruction";
 	const char *exchangetype = "fanout"; /*direct, fanout, topic*/
 	char const routingkey[32] = "test";
+	int port = 5672; 
+#else
+	char mqIp[16] = {0};
+	int port = 0; 
+	char exchange[32] = {0};
+	char exchangetype[10] = {0}; /*direct, fanout, topic*/
+	char routingkey[32] = {0};
+#endif
+	int status;
 	amqp_bytes_t messagebody = amqp_empty_bytes;
 	amqp_socket_t *socket = NULL;
 	amqp_connection_state_t conn;
@@ -199,7 +270,11 @@ static int send_data_to_mq(char *data, int datalen)
 	//exchange = argv[3];
 	//routingkey = argv[4];
 
-	//getMqIp(mqIp);
+	getMqIp(mqIp);
+	port = getMqPort();
+	getMqExchange(exchange);
+	getMqExchangeType(exchangetype);
+	getMqRoutingKey(routingkey);
 	
 	messagebody = amqp_bytes_malloc(datalen);
 	memcpy(messagebody.bytes,data,datalen);

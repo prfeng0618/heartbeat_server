@@ -10,6 +10,7 @@ int  delKeyValueInRedis(const char *command);
 
 void getRedisHostIp(char *redisHostIp);
 int getRedisPort();
+void getRedisPwd(char *redisPassword);
 
 
 void * testRedis(void *arg);

@@ -15,9 +15,12 @@ int  setKeyValueToRedis(const char *command)
 {
     char redisHostIp[40] = {0};
     int redisPort;
+	char redisPwd[32] = {0};
 
     getRedisHostIp(redisHostIp);
     redisPort = getRedisPort();
+	getRedisPwd(redisPwd);
+
 
     //该对象将用于其后所有与Redis操作的函数。
     redisContext* c = redisConnect(redisHostIp, redisPort);
@@ -30,6 +33,13 @@ int  setKeyValueToRedis(const char *command)
     }
 
     dbgTrace("%s:success connect redis server.\n", __FUNCTION__);
+	
+    //Authentication is done after a connection has been made, and should be done by the consumer of the API like so: 
+    redisReply* reply= (redisReply*)redisCommand(c, "AUTH %s",redisPwd);
+    if (reply->type == REDIS_REPLY_ERROR) {
+        dbgTrace("%s:Authentication failed.\n", __FUNCTION__);
+    }
+    freeReplyObject(reply);
 
     redisReply* r = (redisReply*)redisCommand(c, command);
 
@@ -62,9 +72,11 @@ int  getValueInRedis(const char *command)
 {
     char redisHostIp[40] = {0};
     int redisPort;
+	char redisPwd[32] = {0};
 
     getRedisHostIp(redisHostIp);
     redisPort = getRedisPort();
+	getRedisPwd(redisPwd);
 
     redisContext* c = redisConnect(redisHostIp, redisPort);
 
@@ -76,6 +88,13 @@ int  getValueInRedis(const char *command)
     }
 
     dbgTrace("%s:success connect redis server.\n", __FUNCTION__);
+
+    //Authentication is done after a connection has been made, and should be done by the consumer of the API like so: 
+    redisReply* reply= (redisReply*)redisCommand(c, "AUTH %s",redisPwd);
+    if (reply->type == REDIS_REPLY_ERROR) {
+        dbgTrace("%s:Authentication failed.\n", __FUNCTION__);
+    }
+    freeReplyObject(reply);
 
     redisReply*  r = (redisReply*)redisCommand(c, command);
 
@@ -106,9 +125,11 @@ int  delKeyValueInRedis(const char *command)
 {
     char redisHostIp[40] = {0};
     int redisPort;
+	char redisPwd[32] = {0};
 
     getRedisHostIp(redisHostIp);
     redisPort = getRedisPort();
+	getRedisPwd(redisPwd);
 
     redisContext* c = redisConnect(redisHostIp, redisPort);
 
@@ -120,6 +141,13 @@ int  delKeyValueInRedis(const char *command)
     }
 
     dbgTrace("%s:success connect redis server.\n", __FUNCTION__);
+
+    //Authentication is done after a connection has been made, and should be done by the consumer of the API like so: 
+    redisReply* reply= (redisReply*)redisCommand(c, "AUTH %s",redisPwd);
+    if (reply->type == REDIS_REPLY_ERROR) {
+        dbgTrace("%s:Authentication failed.\n", __FUNCTION__);
+    }
+    freeReplyObject(reply);
 
     redisReply*  r = (redisReply*)redisCommand(c, command);
 
@@ -183,6 +211,25 @@ int getRedisPort()
     return sRedisPort;
 
 }
+
+void getRedisPwd(char *redisPassword)
+{
+    static int flag = 0;
+
+    GetProfileString("./initConf.conf", "heartbeat_server", "redisPassword", redisPassword);
+
+    if(flag == 0)
+    {
+        dbgTrace("%s:%s\n", __FUNCTION__ , redisPassword);
+        flag = 1;
+    }
+
+    if(strlen(redisPassword) <= 0)
+    {
+        strcpy(redisPassword, "mye2016");
+    }
+}
+
 
 
 void * testRedis(void *arg)
