@@ -76,7 +76,7 @@ static void print_echoreq(THDR  *tHdr, TECHOREQ  *echoReq)
 		tHdr->sn,
 		tHdr->ext,
 		(unsigned char)echoReq->equipmentSn[0],(unsigned char)echoReq->equipmentSn[1],(unsigned char)echoReq->equipmentSn[2],
-		(unsigned char)echoReq->equipmentSn[3],(unsigned char)echoReq->equipmentSn[2],(unsigned char)echoReq->equipmentSn[5]);
+		(unsigned char)echoReq->equipmentSn[3],(unsigned char)echoReq->equipmentSn[4],(unsigned char)echoReq->equipmentSn[5]);
 }
 
 
@@ -245,10 +245,13 @@ int recv_echofun(int fd, char *pbuff)
 	print_echoreq(pHdr,&echoReqMsg);
 		
     char judgeDevice[8] = {0};
+#if 0
     strncpy(judgeDevice, echoReqMsg.equipmentSn, 6);
     int recvLen = strlen(judgeDevice) ;
+#endif
     char formatMac[24] = {0};
 
+#if 0
     if(recvLen != 6)
     {
         dbgTrace("%s:%d  equipmentSn:", __FUNCTION__, __LINE__);
@@ -256,6 +259,8 @@ int recv_echofun(int fd, char *pbuff)
     }
 
     if(pCnxt->echoFlag == 0 && 6 == recvLen)
+#endif
+	if(pCnxt->echoFlag == 0)
     {
         strncpy(pCnxt->equipmentSn, echoReqMsg.equipmentSn, 6);
 
@@ -263,7 +268,8 @@ int recv_echofun(int fd, char *pbuff)
         memset(&macInfoNode, 0, sizeof(macInfoNode));
         struct mac_info *pmac;
         pmac = &(macInfoNode.macInfo);
-        strncpy(pmac->equipmentSn, echoReqMsg.equipmentSn, 6);
+        //strncpy(pmac->equipmentSn, echoReqMsg.equipmentSn, 6);
+		memcpy(pmac->equipmentSn, echoReqMsg.equipmentSn, 6);
         pmac->onLineStatus = ONLINE;
         pmac->sessionFd = fd;
         macInfoNode.next = NULL;
@@ -277,7 +283,7 @@ int recv_echofun(int fd, char *pbuff)
         pCnxt->echoFlag = 1;
 
         char command[64] = "set online-";
-        changeMac(pmac->equipmentSn, formatMac, recvLen);
+        changeMac(pmac->equipmentSn, formatMac, 6);
         strcat(command, formatMac);
         strcat(command, "  1");
         int setFlag;
