@@ -93,7 +93,7 @@ struct FdProcess
     u32_t client_key; //客户端和服务器端密钥
     u32_t server_key;
     u16_t recvsn;//消息序列号
-    i8_t equipmentSn[6];//设备的mac
+    u8_t equipmentSn[6];//设备的mac
     char * gbuf; //连接缓存
     int dataLen;//当前缓存中的数据长度
     int maxLen;//当前缓存的大小

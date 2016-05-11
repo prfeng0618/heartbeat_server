@@ -49,20 +49,53 @@ struct listnode * findNode(char *str, struct listhash * H)
 
     p = listh;
 
-    while(p != NULL && (strncmp(p->macInfo.equipmentSn, str, 6) != 0))
+	if (p == NULL) 
+		return p;
+
+#if 0
+	char hexStr[6] = {0x11,0x22,0x33,0x00,0x55,0x66};
+	str = hexStr;
+	//if(strncmp(p->macInfo.equipmentSn, str, 6) != 0) {
+	dbgTrace("%s:%d  (%04x%04x %04x%04x %04x%04x) !!\n", __FUNCTION__, __LINE__,
+		*(u16_t*)(&p->macInfo.equipmentSn[0]),*(u16_t*)(&str[0]),
+		*(u16_t*)(&p->macInfo.equipmentSn[2]),*(u16_t*)(&str[2]), 
+		*(u16_t*)(&p->macInfo.equipmentSn[4]),*(u16_t*)(&str[4])
+	);
+
+	if( (*(u16_t*)&p->macInfo.equipmentSn[0]^*(u16_t*)&str[0] || 
+		*(u16_t*)&p->macInfo.equipmentSn[2]^*(u16_t*)&str[2] || 
+		*(u16_t*)&p->macInfo.equipmentSn[4]^*(u16_t*)&str[4])!= 0 ) {
+
+		dbgTrace("%s:%d  (%02x%02x%02x%02x%02x%02x, %02x%02x%02x%02x%02x%02x, 6) is not eq !!!!\n", __FUNCTION__, __LINE__,
+			p->macInfo.equipmentSn[0],p->macInfo.equipmentSn[1],p->macInfo.equipmentSn[2],
+			p->macInfo.equipmentSn[3],p->macInfo.equipmentSn[4],p->macInfo.equipmentSn[5],
+			(u8_t)str[0],(u8_t)str[1],(u8_t)str[2],
+			(u8_t)str[3],(u8_t)str[4],(u8_t)str[5]);
+	} else {
+		dbgTrace("%s:%d  (%02x%02x%02x%02x%02x%02x, %02x%02x%02x%02x%02x%02x, 6) is eq !!!!\n", __FUNCTION__, __LINE__,
+			p->macInfo.equipmentSn[0],p->macInfo.equipmentSn[1],p->macInfo.equipmentSn[2],
+			p->macInfo.equipmentSn[3],p->macInfo.equipmentSn[4],p->macInfo.equipmentSn[5],
+			(u8_t)str[0],(u8_t)str[1],(u8_t)str[2],
+			(u8_t)str[3],(u8_t)str[4],(u8_t)str[5]);
+	}
+#endif
+
+    while( p != NULL && (*(u16_t*)&p->macInfo.equipmentSn[0]^*(u16_t*)&str[0] || 
+			*(u16_t*)&p->macInfo.equipmentSn[2]^*(u16_t*)&str[2] || 
+			*(u16_t*)&p->macInfo.equipmentSn[4]^*(u16_t*)&str[4]) != 0 )
     {
-        char equipmentSn[8] = {0};
-        strncpy(equipmentSn, p->macInfo.equipmentSn, 6);
+        //char equipmentSn[8] = {0};
+        //strncpy(equipmentSn, p->macInfo.equipmentSn, 6);
         dbgTrace("%s:%d  equipmentSn:", __FUNCTION__, __LINE__);
-        printf_equipmentsn(equipmentSn, 6);
+        printf_equipmentsn(p->macInfo.equipmentSn, 6);
         p = p->next;
     }
     if(p != NULL)
     {
-        char equipmentSn[8] = {0};
-        strncpy(equipmentSn, p->macInfo.equipmentSn, 6);
+        //char equipmentSn[8] = {0};
+        //strncpy(equipmentSn, p->macInfo.equipmentSn, 6);
         dbgTrace("%s:%d  equipmentSn:", __FUNCTION__, __LINE__);
-        printf_equipmentsn(equipmentSn, 6);
+        printf_equipmentsn(p->macInfo.equipmentSn, 6);
     }
 
     return p;
@@ -102,7 +135,10 @@ int insertNode(struct listnode * istr, struct listhash * H)
 
         newcell->next = listf;
         H->thelist[idx] = newcell;
-        dbgTrace("insert into cache %s:%d\n", __FUNCTION__, __LINE__);
+		
+        dbgTrace("insert into cache %s:%d mac(%02x%02x%02x%02x%02x%02x)\n", __FUNCTION__, __LINE__,
+			(u8_t)newcell->macInfo.equipmentSn[0],(u8_t)newcell->macInfo.equipmentSn[1],(u8_t)newcell->macInfo.equipmentSn[2],
+			(u8_t)newcell->macInfo.equipmentSn[3],(u8_t)newcell->macInfo.equipmentSn[4],(u8_t)newcell->macInfo.equipmentSn[5]);
     }
 
     return 1;

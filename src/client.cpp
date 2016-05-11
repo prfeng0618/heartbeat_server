@@ -178,6 +178,7 @@ int client_closefun(int epoll, int fd, timer_link *timer)
 
     timer->remote_timer(gFdProcess[fd]);
 
+#if 0
     char *deviceName = gFdProcess[fd]->equipmentSn;
 
     char judgeDevice[8] = {0};
@@ -188,6 +189,19 @@ int client_closefun(int epoll, int fd, timer_link *timer)
     int recvLen = strlen(judgeDevice) ;
 
     dbgTrace("%s:the equipmentSnlen is %d\n", __FUNCTION__ , recvLen);
+
+#else
+	char deviceName[8] = {0};
+	
+	memcpy(deviceName,gFdProcess[fd]->equipmentSn,6);
+	dbgTrace("%s:%d gFdProcess[fd]->equipmentSn(%02x%02x%02x%02x%02x%02x)\n", __FUNCTION__, __LINE__,
+		gFdProcess[fd]->equipmentSn[0],gFdProcess[fd]->equipmentSn[1],gFdProcess[fd]->equipmentSn[2],
+		gFdProcess[fd]->equipmentSn[3],gFdProcess[fd]->equipmentSn[4],gFdProcess[fd]->equipmentSn[5]);
+
+
+#endif
+
+	//dbgTrace("%s:the equipmentSnlen is %d\n", __FUNCTION__ , recvLen);
 
     pthread_mutex_lock(&mac_cache_mutex);
 
@@ -207,10 +221,13 @@ int client_closefun(int epoll, int fd, timer_link *timer)
             pdevice->sessionFd = 0;
             pdevice->onLineStatus = OFFLINE;
         }
+    } else {
+		dbgTrace("%s:findNode(deviceName, mac_cache_name) is NULL \n", __FUNCTION__);
+		return 1;
     }
 
     pthread_mutex_unlock(&mac_cache_mutex);
-
+#if 0
     if(6 == recvLen)
     {
         int setFlag;
@@ -231,6 +248,33 @@ int client_closefun(int epoll, int fd, timer_link *timer)
         strcat(delCommade, formatMac);
         delKeyValueInRedis(delCommade);
     }
+#else
+	int setFlag;
+	char command[64] = {0};
+
+
+	//changeMac(deviceName, formatMac, 6);
+
+	//strcat(command, formatMac);
+	//strcat(command, "  0");
+
+	sprintf(command,"set online-%02X-%02X-%02X-%02X-%02X-%02X 0",
+			(u8_t)deviceName[0],(u8_t)deviceName[1],(u8_t)deviceName[2],
+			(u8_t)deviceName[3],(u8_t)deviceName[4],(u8_t)deviceName[5]);
+
+	setFlag = setKeyValueToRedis(command);
+
+	if(setFlag == 0)
+		dbgTrace("%s:success set the key\n", __FUNCTION__);
+
+
+	char delCommade[64] = {0};
+	//strcat(delCommade, formatMac);
+	sprintf(delCommade,"del heartbeat-%02X-%02X-%02X-%02X-%02X-%02X",
+			(u8_t)deviceName[0],(u8_t)deviceName[1],(u8_t)deviceName[2],
+			(u8_t)deviceName[3],(u8_t)deviceName[4],(u8_t)deviceName[5]);
+	delKeyValueInRedis(delCommade);
+#endif
 
     gFdProcess[fd]->init();
 
@@ -249,7 +293,7 @@ int client_timeoutfun(int epoll, int fd, timer_link *timers, time_value tnow)
     int interval = tnow - pCnxt->m_lastecho;
 
 	int setInterval=getInterval();
-    //30s
+   
 	dbgTrace("%s  %d  fd=%d  setInterval=%d\n", __FUNCTION__, __LINE__, fd,setInterval);
     if(pCnxt->echoFlag == 1 && interval > setInterval * 1000)
     {

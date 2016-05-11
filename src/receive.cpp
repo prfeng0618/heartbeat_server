@@ -262,8 +262,9 @@ int recv_echofun(int fd, char *pbuff)
 #endif
 	if(pCnxt->echoFlag == 0)
     {
-        strncpy(pCnxt->equipmentSn, echoReqMsg.equipmentSn, 6);
-
+        //strncpy(pCnxt->equipmentSn, echoReqMsg.equipmentSn, 6);
+		memcpy(pCnxt->equipmentSn, echoReqMsg.equipmentSn, 6);
+		
         struct listnode macInfoNode;
         memset(&macInfoNode, 0, sizeof(macInfoNode));
         struct mac_info *pmac;
