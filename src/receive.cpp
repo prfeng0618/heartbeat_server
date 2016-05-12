@@ -469,7 +469,8 @@ int recv_notifyreq_fun(int fd, char *pbuff)
 
     char equipmentSn[8] = {0};
 
-    strncpy(equipmentSn, notifyReqMsg.equipmentSn, 6);
+    //strncpy(equipmentSn, notifyReqMsg.equipmentSn, 6);
+	memcpy(equipmentSn, notifyReqMsg.equipmentSn, 6);
 
     dbgTrace("%s:%d  equipmentSn:", __FUNCTION__, __LINE__);
     printf_equipmentsn(equipmentSn, 6);

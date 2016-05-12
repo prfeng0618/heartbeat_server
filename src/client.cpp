@@ -179,7 +179,7 @@ int client_closefun(int epoll, int fd, timer_link *timer)
     timer->remote_timer(gFdProcess[fd]);
 
 #if 0
-    char *deviceName = gFdProcess[fd]->equipmentSn;
+    char *deviceName = (char *)gFdProcess[fd]->equipmentSn;
 
     char judgeDevice[8] = {0};
 
@@ -223,7 +223,6 @@ int client_closefun(int epoll, int fd, timer_link *timer)
         }
     } else {
 		dbgTrace("%s:findNode(deviceName, mac_cache_name) is NULL \n", __FUNCTION__);
-		return 1;
     }
 
     pthread_mutex_unlock(&mac_cache_mutex);
@@ -249,35 +248,36 @@ int client_closefun(int epoll, int fd, timer_link *timer)
         delKeyValueInRedis(delCommade);
     }
 #else
-	int setFlag;
-	char command[64] = {0};
-
-
-	//changeMac(deviceName, formatMac, 6);
-
-	//strcat(command, formatMac);
-	//strcat(command, "  0");
-
-	sprintf(command,"set online-%02X-%02X-%02X-%02X-%02X-%02X 0",
-			(u8_t)deviceName[0],(u8_t)deviceName[1],(u8_t)deviceName[2],
-			(u8_t)deviceName[3],(u8_t)deviceName[4],(u8_t)deviceName[5]);
-
-	setFlag = setKeyValueToRedis(command);
-
-	if(setFlag == 0)
-		dbgTrace("%s:success set the key\n", __FUNCTION__);
-
-
-	char delCommade[64] = {0};
-	//strcat(delCommade, formatMac);
-	sprintf(delCommade,"del heartbeat-%02X-%02X-%02X-%02X-%02X-%02X",
-			(u8_t)deviceName[0],(u8_t)deviceName[1],(u8_t)deviceName[2],
-			(u8_t)deviceName[3],(u8_t)deviceName[4],(u8_t)deviceName[5]);
-	delKeyValueInRedis(delCommade);
+	if(pos != NULL) {
+		int setFlag;
+		char command[64] = {0};
+		
+		
+		//changeMac(deviceName, formatMac, 6);
+		
+		//strcat(command, formatMac);
+		//strcat(command, "  0");
+		
+		sprintf(command,"set online-%02X-%02X-%02X-%02X-%02X-%02X 0",
+				(u8_t)deviceName[0],(u8_t)deviceName[1],(u8_t)deviceName[2],
+				(u8_t)deviceName[3],(u8_t)deviceName[4],(u8_t)deviceName[5]);
+		
+		setFlag = setKeyValueToRedis(command);
+		
+		if(setFlag == 0)
+			dbgTrace("%s:success set the key\n", __FUNCTION__);
+		
+		
+		char delCommade[64] = {0};
+		//strcat(delCommade, formatMac);
+		sprintf(delCommade,"del heartbeat-%02X-%02X-%02X-%02X-%02X-%02X",
+				(u8_t)deviceName[0],(u8_t)deviceName[1],(u8_t)deviceName[2],
+				(u8_t)deviceName[3],(u8_t)deviceName[4],(u8_t)deviceName[5]);
+		delKeyValueInRedis(delCommade);
+	}
 #endif
 
     gFdProcess[fd]->init();
-
     close(fd);
 
     return 1;

@@ -546,7 +546,8 @@ int recv_business_issue_request(int fd,char* pbuff)
 
     char equipmentSn[8] = {0};
 
-    strncpy(equipmentSn, pIssueReq->equipmentSn, 6);
+    //strncpy(equipmentSn, pIssueReq->equipmentSn, 6);
+	memcpy(equipmentSn, pIssueReq->equipmentSn, 6);
 
     dbgTrace("%s:%d  equipmentSn:", __FUNCTION__, __LINE__);
     printf_equipmentsn(equipmentSn, 6);
