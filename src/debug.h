@@ -1,7 +1,6 @@
 #ifndef __DEBUG_H
 #define __DEBUG_H
 
-
 #ifdef __cplusplus
 extern "C"
 {
@@ -63,6 +62,29 @@ enum
 
 #define trace(format...) _trace(__FILE__, __LINE__, format)
 void _trace(char *filename, int line, const char* lpszFormat, ...);
+
+#if 0
+#define critTrace(_fmt, ...)						\
+	do {							\
+		va_list vlist;				\
+		trace(_fmt); 				\
+		openlog("heartbeat_server ", LOG_PID|LOG_CONS, LOG_USER); 		\
+		va_start(vlist, _fmt); \
+		vsyslog(LOG_CRIT, _fmt, vlist);                 \
+		va_end(vlist);								\
+		closelog();												\
+        } while (0)
+#else
+//void critTrace(const char *_fmt, ...);
+#define critTrace(format...)									\
+	do {														\
+		_trace(__FILE__, __LINE__,format);				 	    \
+		_critTrace(format);										\
+	} while (0)
+	
+void _critTrace(const char *_fmt, ...);
+#endif
+
 void dump(unsigned char *p, int n);
 
 extern int i32DbgLvl;

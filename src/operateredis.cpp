@@ -32,7 +32,7 @@ int  setKeyValueToRedis(const char *command)
         return -1;
     }
 
-    dbgTrace("%s:success connect redis server.\n", __FUNCTION__);
+    critTrace("%s:success connect redis server.\n", __FUNCTION__);
 	
     //Authentication is done after a connection has been made, and should be done by the consumer of the API like so: 
     redisReply* reply= (redisReply*)redisCommand(c, "AUTH %s",redisPwd);
@@ -60,7 +60,7 @@ int  setKeyValueToRedis(const char *command)
     }
 
     freeReplyObject(r);
-    dbgTrace("Succeed to execute command[%s].\n", command);
+    critTrace("Succeed to execute command[%s].\n", command);
 
     //不要忘记在退出前释放当前连接的上下文对象
     redisFree(c);
@@ -87,7 +87,7 @@ int  getValueInRedis(const char *command)
         return -1;
     }
 
-    dbgTrace("%s:success connect redis server.\n", __FUNCTION__);
+    critTrace("%s:success connect redis server.\n", __FUNCTION__);
 
     //Authentication is done after a connection has been made, and should be done by the consumer of the API like so: 
     redisReply* reply= (redisReply*)redisCommand(c, "AUTH %s",redisPwd);
@@ -101,18 +101,17 @@ int  getValueInRedis(const char *command)
     if(r->type == REDIS_REPLY_NIL)
     {
         dbgTrace("the key is not exist command[%s].\n", command);
-        dbgTrace("Succeed to execute command[%s].\n", command);
         freeReplyObject(r);
         redisFree(c);
         return -1;
     }
     else if(r->type == REDIS_REPLY_STRING)
     {
-        dbgTrace("Succeed to execute command[%s].the value is %s.\n", command, r->str);
+        critTrace("Succeed to execute command[%s].the value is %s.\n", command, r->str);
     }
     else
     {
-        infoTrace("Failed to execute command[%s].\n", command);
+        dbgTrace("Failed to execute command[%s].\n", command);
     }
 
     freeReplyObject(r);
@@ -140,7 +139,7 @@ int  delKeyValueInRedis(const char *command)
         return -1;
     }
 
-    dbgTrace("%s:success connect redis server.\n", __FUNCTION__);
+    critTrace("%s:success connect redis server.\n", __FUNCTION__);
 
     //Authentication is done after a connection has been made, and should be done by the consumer of the API like so: 
     redisReply* reply= (redisReply*)redisCommand(c, "AUTH %s",redisPwd);
@@ -153,7 +152,7 @@ int  delKeyValueInRedis(const char *command)
 
     if(r->type != REDIS_REPLY_INTEGER)
     {
-        printf("Failed to execute command[%s].\n", command);
+        dbgTrace("Failed to execute command[%s].\n", command);
         freeReplyObject(r);
         redisFree(c);
         return -1;
@@ -161,7 +160,7 @@ int  delKeyValueInRedis(const char *command)
 
     int delNumber = r->integer;
 
-    dbgTrace("Succeed to execute command[%s].the number=%d.\n", command, delNumber);
+    critTrace("Succeed to execute command[%s].the number=%d.\n", command, delNumber);
 
     freeReplyObject(r);
     redisFree(c);

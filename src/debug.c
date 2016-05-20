@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdarg.h>
+#include <syslog.h>
 #include <string.h>
 #include <time.h>
 #include "debug.h"
@@ -114,6 +115,17 @@ void _trace (char *filename, int line, const char *format, ... )
 	va_end(vlist);
 	fputc('\n', stderr);
 }
+
+void _critTrace(const char * _fmt, ...)
+{
+	va_list vlist;				
+	openlog("heartbeat_server ", LOG_PID|LOG_CONS, LOG_USER);		
+	va_start(vlist, _fmt); 
+	vsyslog(LOG_CRIT, _fmt, vlist); 				
+	va_end(vlist);								
+	closelog(); 											
+}
+
 
 #endif
 
