@@ -60,7 +60,9 @@ enum
 
 #define Trace	infoTrace
 
-void trace(const char* lpszFormat, ...);
+
+#define trace(format...) _trace(__FILE__, __LINE__, format)
+void _trace(char *filename, int line, const char* lpszFormat, ...);
 void dump(unsigned char *p, int n);
 
 extern int i32DbgLvl;

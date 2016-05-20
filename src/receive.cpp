@@ -26,7 +26,7 @@ extern pthread_cond_t mac_cache_cond;
 static void print_chalreq(THDR  *tHdr, TCHALREQ  *chalReq)
 {
 
-	printf("<<-- [challange resquest] [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
+	dbgTrace("<<-- [challange resquest] [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
 [data]:{magic(0x%08x),key(%d),res(%02x%02x%02x%02x%02x%02x%02x%02x)}\n", 
 		tHdr->flag,
 		tHdr->pktlen,
@@ -49,7 +49,7 @@ static void print_chalresp(THDR  *tHdr, TCHALRESP  *chalResp)
 	u32_t magic;
     memcpy(&magic, chalResp->magic, sizeof(magic));
 
-	printf("[challange response] -->> [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
+	dbgTrace("[challange response] -->> [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
 [data]:{sn(%d),magic(%08x),key(%d),res(0x%02x%02x%02x%02x%02x%02x)}\n", 
 		tHdr->flag,
 		tHdr->pktlen,
@@ -67,7 +67,7 @@ static void print_chalresp(THDR  *tHdr, TCHALRESP  *chalResp)
 
 static void print_echoreq(THDR  *tHdr, TECHOREQ  *echoReq)
 {
-	printf("<<-- [echo resquest] [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
+	dbgTrace("<<-- [echo resquest] [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
 [data]:{equipmentSn(0x%02x%02x%02x%02x%02x%02x)}\n", 
 		tHdr->flag,
 		tHdr->pktlen,
@@ -83,7 +83,7 @@ static void print_echoreq(THDR  *tHdr, TECHOREQ  *echoReq)
 
 static void print_echoresp(THDR  *tHdr, TECHORESP *echoResp)
 {
-	printf("[echo response] -->> [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
+	dbgTrace("[echo response] -->> [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
 [data]:{client_sn(%d)}\n", 
 		tHdr->flag,
 		tHdr->pktlen,
@@ -97,7 +97,7 @@ static void print_echoresp(THDR  *tHdr, TECHORESP *echoResp)
 
 static void print_notifyreq(THDR  *tHdr,TNOTIFYREQ  *notifyReq)
 {
-	printf("[notify resquest] -->> [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
+	dbgTrace("[notify resquest] -->> [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
 [data]:{equipmentSn(0x%c%c%c%c%c%c), command(%d), sendtime(%d)}\n", 
 		tHdr->flag,
 		tHdr->pktlen,
@@ -113,7 +113,7 @@ static void print_notifyreq(THDR  *tHdr,TNOTIFYREQ  *notifyReq)
 
 static void print_notifyresp(THDR  *tHdr,TNOTIFYRESP* notifyResp)
 {
-	printf("<<-- [notify response] [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
+	dbgTrace("<<-- [notify response] [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
 [data]:{returnSn(%d), returnCode(%d)}\n", 
 		tHdr->flag,
 		tHdr->pktlen,

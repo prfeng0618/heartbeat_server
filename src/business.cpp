@@ -93,7 +93,7 @@ extern PFdProcess gFdProcess[MAX_FD];
 static void print_reportreq(THDR  *tHdr, TREPORTREQ  *reportReq)
 {
 
-	printf("<<-- [report resquest] [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
+	dbgTrace("<<-- [report resquest] [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
 [data]:{vendor(0x%08x)}\n", 
 		tHdr->flag,
 		tHdr->pktlen,
@@ -107,7 +107,7 @@ static void print_reportreq(THDR  *tHdr, TREPORTREQ  *reportReq)
 
 static void print_reportresp(THDR  *tHdr, TREPORTRESP *reportResp)
 {
-	printf("[report response] -->> [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
+	dbgTrace("[report response] -->> [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
 [data]:{client_sn(%d)}\n", 
 		tHdr->flag,
 		tHdr->pktlen,
@@ -121,7 +121,7 @@ static void print_reportresp(THDR  *tHdr, TREPORTRESP *reportResp)
 
 static void print_issuereq(THDR  *tHdr, TISSUEREQ  *issueReq)
 {
-	printf("[issue resquest] -->> [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
+	dbgTrace("[issue resquest] -->> [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
 [data]:{vendor(0x%08x),equipmentSn(0x%02x%02x%02x%02x%02x%02x)}\n", 
 		tHdr->flag,
 		tHdr->pktlen,
@@ -137,7 +137,7 @@ static void print_issuereq(THDR  *tHdr, TISSUEREQ  *issueReq)
 
 static void print_issueresp(THDR  *tHdr, TISSUERESP*issueResp)
 {
-	printf("<<-- [issue response] [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
+	dbgTrace("<<-- [issue response] [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
 [data]:{client_sn(%d),response_code(%d)}\n", 
 		tHdr->flag,
 		tHdr->pktlen,
