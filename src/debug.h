@@ -62,6 +62,8 @@ enum
 
 #define trace(format...) _trace(__FILE__, __LINE__, format)
 void _trace(char *filename, int line, const char* lpszFormat, ...);
+#define printBackTrace() _printBackTrace()
+
 
 #if 0
 #define critTrace(_fmt, ...)						\
@@ -86,6 +88,7 @@ void _critTrace(const char *_fmt, ...);
 #endif
 
 void dump(unsigned char *p, int n);
+void _printBackTrace();
 
 extern int i32DbgLvl;
 

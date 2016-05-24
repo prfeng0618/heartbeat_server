@@ -12,8 +12,8 @@
 #include <syslog.h>
 #include <string.h>
 #include <time.h>
+#include <execinfo.h> // backtrace,backtrace_symbol
 #include "debug.h"
-
 
 int i32DbgLvl = DBG_LVL_DBG;
 
@@ -124,6 +124,24 @@ void _critTrace(const char * _fmt, ...)
 	vsyslog(LOG_CRIT, _fmt, vlist); 				
 	va_end(vlist);								
 	closelog(); 											
+}
+
+void _printBackTrace()
+{
+	void *bt[20]; 
+	char **strings; 
+	size_t sz;
+	int i;
+
+	sz = backtrace(bt, 20); 
+	strings = backtrace_symbols(bt, sz); 
+	openlog("heartbeat_server ", LOG_PID|LOG_CONS, LOG_USER);		
+	for(i = 0; i < sz; ++i) {
+		fprintf(stderr,"%s\n", strings[i]);	
+		syslog(LOG_CRIT, "%s\n", strings[i]); 															
+	}
+	closelog(); 		
+		//_critTrace("%s\n", strings[i]);
 }
 
 

@@ -21,7 +21,6 @@ int  setKeyValueToRedis(const char *command)
     redisPort = getRedisPort();
 	getRedisPwd(redisPwd);
 
-
     //该对象将用于其后所有与Redis操作的函数。
     redisContext* c = redisConnect(redisHostIp, redisPort);
 
@@ -61,6 +60,7 @@ int  setKeyValueToRedis(const char *command)
 
     freeReplyObject(r);
     critTrace("Succeed to execute command[%s].\n", command);
+	printBackTrace();
 
     //不要忘记在退出前释放当前连接的上下文对象
     redisFree(c);
