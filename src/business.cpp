@@ -90,11 +90,12 @@ void die_on_amqp_error(amqp_rpc_reply_t x, char const *context)
 
 extern PFdProcess gFdProcess[MAX_FD];
 
-static void print_reportreq(THDR  *tHdr, TREPORTREQ  *reportReq)
+static void print_reportreq(u8_t* deviceMac,THDR  *tHdr, TREPORTREQ  *reportReq)
 {
 
-	dbgTrace("<<-- [report resquest] [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
-[data]:{vendor(0x%08x)}\n", 
+	dbgTrace("<<-- [report resquest](deviceMac:%02x%02x%02x%02x%02x%02x) [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
+[data]:{vendor(0x%08x)}\n",
+		deviceMac[0],deviceMac[1],deviceMac[2],deviceMac[3],deviceMac[4],deviceMac[5],
 		tHdr->flag,
 		tHdr->pktlen,
 		tHdr->version,
@@ -295,7 +296,7 @@ static int send_data_to_mq(char *data, int datalen)
 					  "Logging in");
 	amqp_channel_open(conn, 1);
 
-	/* pengruofeng declare exchange to fanout */
+	/*declare exchange to fanout */
 	amqp_exchange_declare(conn,1,amqp_cstring_bytes(exchange),amqp_cstring_bytes(exchangetype),
 						   0, 1, 0, 0, amqp_empty_table);
 
@@ -391,16 +392,11 @@ int recv_business_report_request(int fd, char *pbuff)
     //TREPORTREQ reportReqMsg;
     //memset(&reportReqMsg, 0, sizeof(reportReqMsg));
 	TREPORTREQ* pReportReq;
-
-
-	dbgTrace("[%s]:############# pbuff = %s \n", __FUNCTION__,pbuff + sizeof(THDR));
+	
 	XORencode((void *)pbuff + sizeof(THDR), pMsg, serverKey, pHdr->pktlen);
 	pReportReq = (TREPORTREQ*)pMsg;
-
-	dbgTrace("[%s]:*********** pMsg(%d)=%s\n", __FUNCTION__,pHdr->pktlen,pMsg);
-
-	print_reportreq(pHdr,pReportReq);
-	//proc_report_data(reportReqMsg.vendor);
+	
+	print_reportreq(pCnxt->equipmentSn,pHdr,pReportReq);
 
 	/* 将med指令发送到mq队列  */
 	businessData = pMsg + 4;
