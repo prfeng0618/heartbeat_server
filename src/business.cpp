@@ -120,10 +120,10 @@ static void print_reportresp(THDR  *tHdr, TREPORTRESP *reportResp)
 }
 
 
-static void print_issuereq(THDR  *tHdr, TISSUEREQ  *issueReq)
+static void print_issuereq(int fd,THDR  *tHdr, TISSUEREQ  *issueReq)
 {
-	dbgTrace("[issue resquest] -->> [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
-[data]:{vendor(0x%08x),equipmentSn(0x%02x%02x%02x%02x%02x%02x)}\n", 
+	dbgTrace(" [fd=%d] [issue resquest] -->> [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
+[data]:{vendor(0x%08x),equipmentSn(0x%02x%02x%02x%02x%02x%02x)}\n", fd,
 		tHdr->flag,
 		tHdr->pktlen,
 		tHdr->version,
@@ -136,10 +136,10 @@ static void print_issuereq(THDR  *tHdr, TISSUEREQ  *issueReq)
 	);
 }
 
-static void print_issueresp(THDR  *tHdr, TISSUERESP*issueResp)
+static void print_issueresp(int fd,THDR  *tHdr, TISSUERESP*issueResp)
 {
-	dbgTrace("<<-- [issue response] [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
-[data]:{client_sn(%d),response_code(%d)}\n", 
+	dbgTrace("<<-- [fd=%d] [issue response] [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
+[data]:{client_sn(%d),response_code(%d)}\n", fd,
 		tHdr->flag,
 		tHdr->pktlen,
 		tHdr->version,
@@ -453,7 +453,7 @@ int send_business_issue_request(int fd, char *issueReqMsg,int issueReqMsgLen)
 #endif
 	TISSUEREQ *pIssueReqMsg;
 	pIssueReqMsg = (TISSUEREQ *)issueReqMsg;
-	print_issuereq(pHdr,pIssueReqMsg);
+	print_issuereq(fd,pHdr,pIssueReqMsg);
 
 	char sendIssueReqMsg[1024] = {0};
 	dbgTrace("%s:len=%d\n", __FUNCTION__, pHdr->pktlen);
@@ -480,7 +480,7 @@ int recv_business_issue_response(int fd,char* pbuff)
 
     XORencode((void *)pbuff + sizeof(THDR), &issueRespMsg, key, pHdr->pktlen);
 
-	print_issueresp(pHdr,&issueRespMsg);
+	print_issueresp(fd,pHdr,&issueRespMsg);
     return 1;
 }
 
@@ -504,7 +504,7 @@ int send_business_issue_response(int fd, TISSUERESP *pIssueResp)
 	TISSUERESP  sendIssueResp;
     pHdr->pktlen = sizeof(sendIssueResp);
 
-	print_issueresp(pHdr,pIssueResp);
+	print_issueresp(fd,pHdr,pIssueResp);
 	
     dbgTrace("%s:len=%d\n", __FUNCTION__, pHdr->pktlen);
     XORencode(pIssueResp, &sendIssueResp, key, pHdr->pktlen);
@@ -538,7 +538,7 @@ int recv_business_issue_request(int fd,char* pbuff)
 	dbgTrace("%s:len=%d\n", __FUNCTION__, pHdr->pktlen);
     XORencode((void *)pbuff + sizeof(THDR), (void *)issueReqMsg, serverKey, pHdr->pktlen);
 	pIssueReq = (TISSUEREQ*)issueReqMsg;
-	print_issuereq(pHdr,pIssueReq);
+	print_issuereq(fd,pHdr,pIssueReq);
 
     char equipmentSn[8] = {0};
 

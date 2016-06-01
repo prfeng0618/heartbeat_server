@@ -49,8 +49,11 @@ struct listnode * findNode(char *str, struct listhash * H)
 
     p = listh;
 
-	if (p == NULL) 
+	if (p == NULL) {
+		dbgTrace("%s: can't find hash list node head : %02x%02x%02x%02x%02x%02x", __FUNCTION__,
+			(u8_t)str[0],(u8_t)str[1],(u8_t)str[2],(u8_t)str[3],(u8_t)str[4],(u8_t)str[5]);
 		return p;
+	}
 
 #if 0
 	char hexStr[6] = {0x11,0x22,0x33,0x00,0x55,0x66};
@@ -86,18 +89,22 @@ struct listnode * findNode(char *str, struct listhash * H)
     {
         //char equipmentSn[8] = {0};
         //strncpy(equipmentSn, p->macInfo.equipmentSn, 6);
-        dbgTrace("%s:%d  equipmentSn:", __FUNCTION__, __LINE__);
-        printf_equipmentsn(p->macInfo.equipmentSn, 6);
+        //dbgTrace("%s:%d  equipmentSn:", __FUNCTION__, __LINE__);
+        //printf_equipmentsn(p->macInfo.equipmentSn, 6);
         p = p->next;
     }
+
     if(p != NULL)
     {
         //char equipmentSn[8] = {0};
         //strncpy(equipmentSn, p->macInfo.equipmentSn, 6);
-        dbgTrace("%s:%d  equipmentSn:", __FUNCTION__, __LINE__);
-        printf_equipmentsn(p->macInfo.equipmentSn, 6);
+        dbgTrace("%s: find node equipmentSn : %02x%02x%02x%02x%02x%02x", __FUNCTION__,
+        		(u8_t)p->macInfo.equipmentSn[0],(u8_t)p->macInfo.equipmentSn[1],(u8_t)p->macInfo.equipmentSn[2],
+				(u8_t)p->macInfo.equipmentSn[3],(u8_t)p->macInfo.equipmentSn[4],(u8_t)p->macInfo.equipmentSn[5]);
+    } else {
+        dbgTrace("%s: can't find node equipmentSn : %02x%02x%02x%02x%02x%02x", __FUNCTION__,
+			(u8_t)str[0],(u8_t)str[1],(u8_t)str[2],(u8_t)str[3],(u8_t)str[4],(u8_t)str[5]);
     }
-
     return p;
 }
 

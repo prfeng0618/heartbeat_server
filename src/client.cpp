@@ -194,10 +194,9 @@ int client_closefun(int epoll, int fd, timer_link *timer)
 	char deviceName[8] = {0};
 	
 	memcpy(deviceName,gFdProcess[fd]->equipmentSn,6);
-	dbgTrace("%s:%d gFdProcess[fd]->equipmentSn(%02x%02x%02x%02x%02x%02x)\n", __FUNCTION__, __LINE__,
+	dbgTrace("%s:%d gFdProcess[%d]->equipmentSn(%02x%02x%02x%02x%02x%02x)\n", __FUNCTION__, __LINE__,fd,
 		gFdProcess[fd]->equipmentSn[0],gFdProcess[fd]->equipmentSn[1],gFdProcess[fd]->equipmentSn[2],
 		gFdProcess[fd]->equipmentSn[3],gFdProcess[fd]->equipmentSn[4],gFdProcess[fd]->equipmentSn[5]);
-
 
 #endif
 
@@ -208,16 +207,23 @@ int client_closefun(int epoll, int fd, timer_link *timer)
     struct listnode *pos = NULL;
     pos = findNode(deviceName, mac_cache_name);
     struct mac_info * pdevice = NULL;
+	int closeTimeFd = 0;
 
-    if(pos != NULL)
+    if(pos != NULL )
     {
         pdevice = &pos->macInfo;
 
         dbgTrace("%s  %d  fd=%d   online=%d\n", __FUNCTION__,
                  __LINE__, pdevice->sessionFd, pdevice->onLineStatus);
 
-        if(pdevice->sessionFd == fd)
+
+		/* 如果pdevice->sessionFd != fd 表示fd是因为心跳超时需要断开连接，但在判断超时的过程
+		中，客户端已经建立了新的链接，这时候不能影响新连接的状态，但要关闭
+		超时连接*/
+        if(pdevice->sessionFd != fd)
         {
+			closeTimeFd = 1;
+        } else {
             pdevice->sessionFd = 0;
             pdevice->onLineStatus = OFFLINE;
         }
@@ -226,6 +232,11 @@ int client_closefun(int epoll, int fd, timer_link *timer)
     }
 
     pthread_mutex_unlock(&mac_cache_mutex);
+
+	if(closeTimeFd == 1) {
+		critTrace("%s : pdevice->sessionFd(%d) != fd(%d),close timeout fd!\n", __FUNCTION__,pdevice->sessionFd,fd);
+	}	
+
 #if 0
     if(6 == recvLen)
     {
@@ -248,7 +259,7 @@ int client_closefun(int epoll, int fd, timer_link *timer)
         delKeyValueInRedis(delCommade);
     }
 #else
-	if(pos != NULL) {
+	if(pos != NULL && !closeTimeFd) {
 		int setFlag;
 		char command[64] = {0};
 		
@@ -293,12 +304,14 @@ int client_timeoutfun(int epoll, int fd, timer_link *timers, time_value tnow)
     int interval = tnow - pCnxt->m_lastecho;
 
 	int setInterval=getInterval();
-   
-	dbgTrace("%s  %d  fd=%d  setInterval=%d\n", __FUNCTION__, __LINE__, fd,setInterval);
+
+	/* pengruofeng debug timeout*/
+    dbgTrace("%s : fd(%d) setInterval(%ds) interval(%d=%d-%d)  \n",
+    		__FUNCTION__,fd,setInterval,interval,tnow,pCnxt->m_lastecho);
     if(pCnxt->echoFlag == 1 && interval > setInterval * 1000)
     {
         client_closefun(epoll, fd, timers);
-        dbgTrace("%s  heartbeat timeout  %d\n", __FUNCTION__, fd);
+        dbgTrace("%s  heartbeat timeout(%ds)  %d\n", __FUNCTION__,setInterval,fd);
     }
 
     timers->add_timer(gFdProcess[fd], tnow + 10 * 1000);

@@ -23,11 +23,11 @@ extern pthread_cond_t mac_cache_cond;
 
 #define ETH_NAME        "eth0"
 
-static void print_chalreq(THDR  *tHdr, TCHALREQ  *chalReq)
+static void print_chalreq(int fd,THDR  *tHdr, TCHALREQ  *chalReq)
 {
 
-	dbgTrace("<<-- [challange resquest] [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
-[data]:{magic(0x%08x),key(%d),res(%02x%02x%02x%02x%02x%02x%02x%02x)}\n", 
+	dbgTrace("<<-- [fd=%d] [challange resquest] [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
+[data]:{magic(0x%08x),key(%d),res(%02x%02x%02x%02x%02x%02x%02x%02x)}\n",fd,
 		tHdr->flag,
 		tHdr->pktlen,
 		tHdr->version,
@@ -42,15 +42,15 @@ static void print_chalreq(THDR  *tHdr, TCHALREQ  *chalReq)
 }
 
 
-static void print_chalresp(THDR  *tHdr, TCHALRESP  *chalResp)
+static void print_chalresp(int fd,THDR  *tHdr, TCHALRESP  *chalResp)
 {
 	u32_t server_key;
     memcpy(&server_key, chalResp->key, sizeof(server_key));
 	u32_t magic;
     memcpy(&magic, chalResp->magic, sizeof(magic));
 
-	dbgTrace("[challange response] -->> [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
-[data]:{sn(%d),magic(%08x),key(%d),res(0x%02x%02x%02x%02x%02x%02x)}\n", 
+	dbgTrace(" [fd=%d] [challange response] -->> [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
+[data]:{sn(%d),magic(%08x),key(%d),res(0x%02x%02x%02x%02x%02x%02x)}\n",fd,
 		tHdr->flag,
 		tHdr->pktlen,
 		tHdr->version,
@@ -65,10 +65,10 @@ static void print_chalresp(THDR  *tHdr, TCHALRESP  *chalResp)
 
 
 
-static void print_echoreq(THDR  *tHdr, TECHOREQ  *echoReq)
+static void print_echoreq(int fd,THDR  *tHdr, TECHOREQ  *echoReq)
 {
-	dbgTrace("<<-- [echo resquest] [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
-[data]:{equipmentSn(0x%02x%02x%02x%02x%02x%02x)}\n", 
+	dbgTrace("<<-- [fd=%d] [echo resquest] [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
+[data]:{equipmentSn(0x%02x%02x%02x%02x%02x%02x)}\n",fd, 
 		tHdr->flag,
 		tHdr->pktlen,
 		tHdr->version,
@@ -81,10 +81,10 @@ static void print_echoreq(THDR  *tHdr, TECHOREQ  *echoReq)
 
 
 
-static void print_echoresp(THDR  *tHdr, TECHORESP *echoResp)
+static void print_echoresp(int fd,THDR  *tHdr, TECHORESP *echoResp)
 {
-	dbgTrace("[echo response] -->> [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
-[data]:{client_sn(%d)}\n", 
+	dbgTrace(" [fd=%d] [echo response] -->> [hdr]:{flag(0x%04x),pktlen(%d),version(%d),pktType(%d),sn(%d),ext(0x%08x)} \
+[data]:{client_sn(%d)}\n",fd,
 		tHdr->flag,
 		tHdr->pktlen,
 		tHdr->version,
@@ -240,9 +240,8 @@ int recv_echofun(int fd, char *pbuff)
 
     TECHOREQ echoReqMsg;
     XORencode(pbuff + sizeof(THDR), &echoReqMsg, key, pHdr->pktlen);
-
-	/*pengruofeng debug mips*/
-	print_echoreq(pHdr,&echoReqMsg);
+	
+	print_echoreq(fd,pHdr,&echoReqMsg);
 		
     char judgeDevice[8] = {0};
 #if 0
@@ -260,6 +259,7 @@ int recv_echofun(int fd, char *pbuff)
 
     if(pCnxt->echoFlag == 0 && 6 == recvLen)
 #endif
+
 	if(pCnxt->echoFlag == 0)
     {
         //strncpy(pCnxt->equipmentSn, echoReqMsg.equipmentSn, 6);
@@ -291,8 +291,8 @@ int recv_echofun(int fd, char *pbuff)
 
         setFlag = setKeyValueToRedis(command);
 
-        if(setFlag == 0)
-            dbgTrace("success set the key\n");
+        //if(setFlag == 0)
+        //    dbgTrace("success set the key\n");
 
         setMacAndIP(formatMac);
 
@@ -308,7 +308,6 @@ int recv_echofun(int fd, char *pbuff)
 
 int send_echofun(int fd, u16_t clientSn)
 {
-    dbgTrace("%s  clientSn=%d\n", __FUNCTION__, clientSn);
     FdProcess *pCnxt;
     pCnxt = gFdProcess[fd];
 
@@ -334,7 +333,7 @@ int send_echofun(int fd, u16_t clientSn)
     TECHORESP sendEchoRespMsg;
 
 	/*pengruofeng debug mips*/
-	print_echoresp(pHdr,pechoRespMsg);
+	print_echoresp(fd,pHdr,pechoRespMsg);
 
     XORencode(pechoRespMsg, &sendEchoRespMsg, key, pHdr->pktlen);
 
@@ -373,7 +372,7 @@ int recv_chalfun(int fd, char *pbuff)
     des_decode((void *)(pbuff + sizeof(THDR)), pReq, CHANLLENGE_KEY, sizeof(*pReq));
 	
 	/*pengruofeng debug mips*/
-	print_chalreq(pHdr,pReq);
+	print_chalreq(fd,pHdr,pReq);
 
     pCnxt->client_key = Rchal_reqmsg.key;
 
@@ -423,7 +422,7 @@ int send_chalfun(int fd, u16_t client_sn)
     memset(pResp->u6res, sizeof(pResp->u6res), sizeof(pResp->u6res));
 
 	/*pengruofeng debug mips*/
-	print_chalresp(pHdr,pResp);
+	print_chalresp(fd,pHdr,pResp);
 
     DES_chalfun(fd, &chal_header, &chal_respmsg);
 
@@ -689,7 +688,6 @@ int changeMac(char *src, char *dest, int srcLen)
     }
 
     dest[i * 3 - 1] = '\0';
-    printf("[%s]\n", dest);
     return 0;
 }
 
